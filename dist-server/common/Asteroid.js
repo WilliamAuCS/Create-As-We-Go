@@ -29,120 +29,97 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-// /////////////////////////////////////////////////////////
-//
-// GAME OBJECTS
-//
-// /////////////////////////////////////////////////////////
-var YourGameObject =
+var game = null;
+var p2 = null;
+
+var Asteroid =
 /*#__PURE__*/
-function (_DynamicObject) {
-  _inherits(YourGameObject, _DynamicObject);
+function (_PhysicalObject2D) {
+  _inherits(Asteroid, _PhysicalObject2D);
 
-  function YourGameObject(gameEngine, options, props) {
-    _classCallCheck(this, YourGameObject);
+  function Asteroid() {
+    _classCallCheck(this, Asteroid);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(YourGameObject).call(this, gameEngine, options, props));
+    return _possibleConstructorReturn(this, _getPrototypeOf(Asteroid).apply(this, arguments));
   }
 
-  _createClass(YourGameObject, [{
+  _createClass(Asteroid, [{
+    key: "onAddToWorld",
+    // on add-to-world, create a physics body
+    value: function onAddToWorld() {
+      game = this.gameEngine;
+      p2 = game.physicsEngine.p2;
+      this.physicsObj = new p2.Body({
+        mass: this.mass,
+        damping: 0,
+        angularDamping: 0,
+        position: [this.position.x, this.position.y],
+        velocity: [this.velocity.x, this.velocity.y]
+      });
+      this.physicsObj.addShape(new p2.Circle({
+        radius: game.asteroidRadius * (game.numAsteroidLevels - this.level) / game.numAsteroidLevels,
+        collisionGroup: game.ASTEROID,
+        // Belongs to the ASTEROID group
+        collisionMask: game.BULLET | game.SHIP // Can collide with the BULLET or SHIP group
+
+      }));
+      this.addAsteroidVerts();
+      game.physicsEngine.world.addBody(this.physicsObj);
+    } // on remove-from-world, remove the physics body
+
+  }, {
+    key: "onRemoveFromWorld",
+    value: function onRemoveFromWorld() {
+      game.physicsEngine.world.removeBody(this.physicsObj);
+    } // Adds random .verts to an asteroid body
+
+  }, {
+    key: "addAsteroidVerts",
+    value: function addAsteroidVerts() {
+      this.physicsObj.verts = [];
+      var radius = this.physicsObj.shapes[0].radius;
+
+      for (var j = 0; j < game.numAsteroidVerts; j++) {
+        var angle = j * 2 * Math.PI / game.numAsteroidVerts;
+        var xv = radius * Math.cos(angle) + game.rand() * radius * 0.4;
+        var yv = radius * Math.sin(angle) + game.rand() * radius * 0.4;
+        this.physicsObj.verts.push([xv, yv]);
+      }
+    }
+  }, {
     key: "syncTo",
     value: function syncTo(other) {
-      _get(_getPrototypeOf(YourGameObject.prototype), "syncTo", this).call(this, other);
+      _get(_getPrototypeOf(Asteroid.prototype), "syncTo", this).call(this, other);
+    }
+  }, {
+    key: "toString",
+    value: function toString() {
+      return "Asteroid::".concat(_get(_getPrototypeOf(Asteroid.prototype), "toString", this).call(this), " Level").concat(this.level);
+    }
+  }, {
+    key: "bending",
+    // position bending: bend fully to server position in each sync [percent=1.0],
+    // unless the position difference is larger than 4.0 (i.e. wrap beyond bounds)
+    get: function get() {
+      return {
+        position: {
+          max: 4.0
+        }
+      };
     }
   }], [{
     key: "netScheme",
     get: function get() {
       return Object.assign({
-        health: {
+        level: {
           type: _lanceGg.BaseTypes.TYPES.INT16
         }
-      }, _get(_getPrototypeOf(YourGameObject), "netScheme", this));
+      }, _get(_getPrototypeOf(Asteroid), "netScheme", this));
     }
   }]);
 
-  return YourGameObject;
-}(_lanceGg.DynamicObject); // /////////////////////////////////////////////////////////
-//
-// GAME ENGINE
-//
-// /////////////////////////////////////////////////////////
+  return Asteroid;
+}(_lanceGg.PhysicalObject2D);
 
-
-var Game =
-/*#__PURE__*/
-function (_GameEngine) {
-  _inherits(Game, _GameEngine);
-
-  function Game(options) {
-    var _this;
-
-    _classCallCheck(this, Game);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Game).call(this, options));
-    _this.physicsEngine = new _lanceGg.SimplePhysicsEngine({
-      gameEngine: _assertThisInitialized(_this)
-    }); // common code
-
-    _this.on('postStep', _this.gameLogic.bind(_assertThisInitialized(_this))); // server-only code
-
-
-    _this.on('server__init', _this.serverSideInit.bind(_assertThisInitialized(_this)));
-
-    _this.on('server__playerJoined', _this.serverSidePlayerJoined.bind(_assertThisInitialized(_this)));
-
-    _this.on('server__playerDisconnected', _this.serverSidePlayerDisconnected.bind(_assertThisInitialized(_this))); // client-only code
-
-
-    _this.on('client__rendererReady', _this.clientSideInit.bind(_assertThisInitialized(_this)));
-
-    _this.on('client__draw', _this.clientSideDraw.bind(_assertThisInitialized(_this)));
-
-    return _this;
-  }
-
-  _createClass(Game, [{
-    key: "registerClasses",
-    value: function registerClasses(serializer) {
-      serializer.registerClass(YourGameObject);
-    }
-  }, {
-    key: "gameLogic",
-    value: function gameLogic() {}
-  }, {
-    key: "processInput",
-    value: function processInput(inputData, playerId) {
-      _get(_getPrototypeOf(Game.prototype), "processInput", this).call(this, inputData, playerId);
-    } // /////////////////////////////////////////////////////////
-    //
-    // SERVER ONLY CODE
-    //
-    // /////////////////////////////////////////////////////////
-
-  }, {
-    key: "serverSideInit",
-    value: function serverSideInit() {}
-  }, {
-    key: "serverSidePlayerJoined",
-    value: function serverSidePlayerJoined(ev) {}
-  }, {
-    key: "serverSidePlayerDisconnected",
-    value: function serverSidePlayerDisconnected(ev) {} // /////////////////////////////////////////////////////////
-    //
-    // CLIENT ONLY CODE
-    //
-    // /////////////////////////////////////////////////////////
-
-  }, {
-    key: "clientSideInit",
-    value: function clientSideInit() {}
-  }, {
-    key: "clientSideDraw",
-    value: function clientSideDraw() {}
-  }]);
-
-  return Game;
-}(_lanceGg.GameEngine);
-
-exports.default = Game;
-//# sourceMappingURL=Game.js.map
+exports.default = Asteroid;
+//# sourceMappingURL=Asteroid.js.map

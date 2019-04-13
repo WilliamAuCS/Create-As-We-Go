@@ -2,9 +2,11 @@
 
 var _queryString = _interopRequireDefault(require("query-string"));
 
-var _Game = _interopRequireDefault(require("../common/Game"));
-
 var _lanceGg = require("lance-gg");
+
+var _AsteroidsClientEngine = _interopRequireDefault(require("../client/AsteroidsClientEngine"));
+
+var _AsteroidsGameEngine = _interopRequireDefault(require("../common/AsteroidsGameEngine"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -14,18 +16,19 @@ var qsOptions = _queryString.default.parse(location.search); // default options,
 
 var defaults = {
   traceLevel: _lanceGg.Lib.Trace.TRACE_NONE,
-  delayInputCount: 3,
+  delayInputCount: 5,
   scheduler: 'render-schedule',
   syncOptions: {
     sync: qsOptions.sync || 'extrapolate',
-    remoteObjBending: 0.8,
+    localObjBending: 0.8,
+    remoteObjBending: 1.0,
     bendingIncrements: 6
   }
 };
 var options = Object.assign(defaults, qsOptions); // create a client engine and a game engine
 
-var gameEngine = new _Game.default(options);
-var clientEngine = new _lanceGg.ClientEngine(gameEngine, options, _lanceGg.Renderer);
+var gameEngine = new _AsteroidsGameEngine.default(options);
+var clientEngine = new _AsteroidsClientEngine.default(gameEngine, options);
 document.addEventListener('DOMContentLoaded', function (e) {
   clientEngine.start();
 });

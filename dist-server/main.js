@@ -8,7 +8,9 @@ var _socket = _interopRequireDefault(require("socket.io"));
 
 var _lanceGg = require("lance-gg");
 
-var _Game = _interopRequireDefault(require("./common/Game"));
+var _AsteroidsGameEngine = _interopRequireDefault(require("./common/AsteroidsGameEngine"));
+
+var _AsteroidsServerEngine = _interopRequireDefault(require("./server/AsteroidsServerEngine"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27,10 +29,10 @@ var requestHandler = server.listen(PORT, function () {
 });
 var io = (0, _socket.default)(requestHandler); // Game Instances
 
-var gameEngine = new _Game.default({
+var gameEngine = new _AsteroidsGameEngine.default({
   traceLevel: _lanceGg.Lib.Trace.TRACE_NONE
 });
-var serverEngine = new _lanceGg.ServerEngine(io, gameEngine, {
+var serverEngine = new _AsteroidsServerEngine.default(io, gameEngine, {
   debug: {},
   updateRate: 6
 }); // start the game
