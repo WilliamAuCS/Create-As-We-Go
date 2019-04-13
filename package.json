@@ -1,10 +1,10 @@
 {
-  "name": "lance-pong",
+  "name": "lance-boilerplate",
   "version": "4.0.0",
   "engines": {
     "node": ">=11.0.0"
   },
-  "description": "An HTML5 multiplayer pong game based on Lance",
+  "description": "An HTML5 multiplayer game based on Lance",
   "main": "src/main.js",
   "dependencies": {
     "@babel/node": "^7.2.2",
